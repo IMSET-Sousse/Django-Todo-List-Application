@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.db.models import Q
 from .models import Task, Category, Tag
 from .forms import TaskForm, CategoryForm, TagForm, RegisterForm
+from django.contrib import messages
 
 @login_required
 def task_list(request):
@@ -108,4 +109,12 @@ def register(request):
             return redirect('login')
     else:
         form = RegisterForm()
-    return render(request, 'todo/register.html', {'form': form})
+    return render(request, 'todo/register.html', {'form': form}) 
+    In create_task view after saving:
+messages.success(request, 'Task created successfully!')
+
+In update_task view after saving:
+messages.success(request, 'Task updated successfully!')
+
+In delete_task view after deleting:
+messages.success(request, 'Task deleted successfully!')
