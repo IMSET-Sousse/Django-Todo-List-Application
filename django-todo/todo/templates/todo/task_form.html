@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-lg-6">
+    <div class="col-lg-8">
         <div class="card">
             <div class="card-header bg-white">
                 <h5 class="mb-0">{% if object %}Edit{% else %}Create New{% endif %} Task</h5>
@@ -12,24 +12,56 @@
             <div class="card-body">
                 <form method="post">
                     {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="id_title" class="form-label">Title</label>
-                        {{ form.title }}
-                        {% if form.title.errors %}
-                        <div class="invalid-feedback d-block">
-                            {{ form.title.errors.0 }}
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            {{ form.title.label_tag }}
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.title.errors.0 }}
+                            </div>
+                            {% endif %}
                         </div>
-                        {% endif %}
+                        <div class="col-md-4">
+                            {{ form.priority.label_tag }}
+                            {{ form.priority }}
+                        </div>
+                        
+                        <div class="col-12">
+                            {{ form.description.label_tag }}
+                            {{ form.description }}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            {{ form.due_date.label_tag }}
+                            {{ form.due_date }}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            {{ form.category.label_tag }}
+                            {{ form.category }}
+                        </div>
+                        
+                        <div class="col-12">
+                            {{ form.tags.label_tag }}
+                            <select name="tags" id="id_tags" class="form-select" multiple>
+                                {% for tag in form.tags.field.queryset %}
+                                <option value="{{ tag.id }}" {% if tag.id in form.tags.value %}selected{% endif %}>
+                                    #{{ tag.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-12">
+                            <div class="form-check">
+                                {{ form.complete }}
+                                <label class="form-check-label" for="id_complete">Completed</label>
+                            </div>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="id_description" class="form-label">Description (Optional)</label>
-                        {{ form.description }}
-                    </div>
-                    <div class="mb-3 form-check">
-                        {{ form.complete }}
-                        <label class="form-check-label" for="id_complete">Completed</label>
-                    </div>
-                    <div class="d-flex justify-content-between">
+                    
+                    <div class="d-flex justify-content-between mt-4">
                         <a href="{% url 'todo:task_list' %}" class="btn btn-secondary">
                             <i class="fas fa-arrow-left me-1"></i> Cancel
                         </a>
@@ -48,7 +80,19 @@
     // Add Bootstrap classes to form fields
     document.getElementById('id_title').className = 'form-control';
     document.getElementById('id_description').className = 'form-control';
+    document.getElementById('id_due_date').className = 'form-control';
+    document.getElementById('id_priority').className = 'form-select';
+    document.getElementById('id_category').className = 'form-select';
+    document.getElementById('id_tags').className = 'form-select';
     document.getElementById('id_complete').className = 'form-check-input';
+    
+    // Initialize select2 for tags (if you want to use select2)
+    // $(document).ready(function() {
+    //     $('#id_tags').select2({
+    //         placeholder: "Select tags",
+    //         allowClear: true
+    //     });
+    // });
 </script>
 {% endblock %}
 {% endblock %}

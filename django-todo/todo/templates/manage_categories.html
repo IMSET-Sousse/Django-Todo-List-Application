@@ -1,0 +1,87 @@
+{% extends 'todo/base.html' %}
+
+{% block title %}Manage Categories{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Manage Categories</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="id_name" class="form-label">Category Name</label>
+                            <input type="text" name="name" class="form-control" id="id_name" required
+                                   value="{{ form.name.value|default_if_none:'' }}">
+                            {% if form.name.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.name.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="id_color" class="form-label">Color</label>
+                            <div class="input-group">
+                                <input type="color" name="color" class="form-control form-control-color" id="id_color"
+                                       value="{{ form.color.value|default:'#4e73df' }}" title="Choose color">
+                                <span class="input-group-text" id="colorPreview"></span>
+                            </div>
+                            {% if form.color.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.color.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-plus me-1"></i> Add
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                
+                <hr>
+                
+                <div class="row row-cols-1 row-cols-md-3 g-4">
+                    {% for category in categories %}
+                    <div class="col">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge rounded-pill">
+                                        {{ category.name }}
+                                    </span>
+                                    <form method="post" action="{% url 'todo:delete_category' category.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12">
+                        <p class="text-muted text-center">No categories yet.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    // Update color preview when color changes
+    document.getElementById('id_color').addEventListener('input', function() {
+        document.getElementById('colorPreview').style.backgroundColor = this.value;
+    });
+</script>
+{% endblock %}
+{% endblock %}

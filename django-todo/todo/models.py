@@ -5,14 +5,14 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 class Category(models.Model):
     name = models.CharField(max_length=50)
     color = models.CharField(max_length=7, default='#4e73df')  # Hex color
-
-    def str(self):
+    
+    def __str__(self):
         return self.name
 
 class Tag(models.Model):
     name = models.CharField(max_length=30)
-
-    def str(self):
+    
+    def __str__(self):
         return self.name
 
 class Task(models.Model):
@@ -22,7 +22,7 @@ class Task(models.Model):
         (3, 'High'),
         (4, 'Urgent'),
     ]
-
+    
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
@@ -32,13 +32,13 @@ class Task(models.Model):
     priority = models.IntegerField(choices=PRIORITY_CHOICES, default=2)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
     tags = models.ManyToManyField(Tag, blank=True)
-
-    def str(self):
+    
+    def __str__(self):
         return self.title
-
+    
     class Meta:
         ordering = ['-priority', 'complete', 'due_date']
-
+    
     @property
     def is_overdue(self):
         if self.due_date:

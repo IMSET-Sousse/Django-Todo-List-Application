@@ -3,8 +3,73 @@
 {% block title %}My Tasks{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-8">
+<div class="row">
+    <div class="col-lg-3 mb-4">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Filters</h5>
+            </div>
+            <div class="card-body">
+                <form method="get" class="mb-4">
+                    <div class="input-group mb-3">
+                        <input type="text" name="search" class="form-control" placeholder="Search tasks..." 
+                               value="{{ search_query }}">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Priority</label>
+                        <select name="priority" class="form-select" onchange="this.form.submit()">
+                            <option value="">All Priorities</option>
+                            <option value="1" {% if selected_priority == 1 %}selected{% endif %}>Low</option>
+                            <option value="2" {% if selected_priority == 2 %}selected{% endif %}>Medium</option>
+                            <option value="3" {% if selected_priority == 3 %}selected{% endif %}>High</option>
+                            <option value="4" {% if selected_priority == 4 %}selected{% endif %}>Urgent</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Category</label>
+                        <select name="category" class="form-select" onchange="this.form.submit()">
+                            <option value="">All Categories</option>
+                            {% for category in categories %}
+                            <option value="{{ category.id }}" {% if selected_category == category.id %}selected{% endif %}>
+                                {{ category.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Tags</label>
+                        <select name="tag" class="form-select" onchange="this.form.submit()">
+                            <option value="">All Tags</option>
+                            {% for tag in tags %}
+                            <option value="{{ tag.id }}" {% if selected_tag == tag.id %}selected{% endif %}>
+                                #{{ tag.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <a href="{% url 'todo:task_list' %}" class="btn btn-secondary w-100">Reset Filters</a>
+                </form>
+                
+                <div class="d-grid gap-2">
+                    <a href="{% url 'todo:manage_categories' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-tags me-1"></i> Manage Categories
+                    </a>
+                    <a href="{% url 'todo:manage_tags' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-hashtag me-1"></i> Manage Tags
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-9">
         <div class="card mb-4">
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">My Todo List</h5>
@@ -16,19 +81,58 @@
                 {% if tasks %}
                 <div class="list-group">
                     {% for task in tasks %}
-                    <div class="list-group-item list-group-item-action task-item mb-2 {% if task.complete %}completed{% endif %}">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="me-3">
-                                <h6 class="task-title mb-1 {% if task.complete %}text-muted{% else %}text-dark{% endif %}">
-                                    {{ task.title }}
-                                </h6>
+                    <div class="list-group-item list-group-item-action task-item mb-2 {% if task.complete %}completed{% endif %} {% if task.is_overdue %}border-danger{% endif %}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="me-3 flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <h6 class="task-title mb-0 {% if task.complete %}text-muted{% else %}text-dark{% endif %}">
+                                        {{ task.title }}
+                                        {% if task.is_overdue and not task.complete %}
+                                        <span class="badge bg-danger ms-2">Overdue</span>
+                                        {% endif %}
+                                    </h6>
+                                    <span class="badge {% if task.priority == 1 %}bg-info
+                                                     {% elif task.priority == 2 %}bg-primary
+                                                     {% elif task.priority == 3 %}bg-warning text-dark
+                                                     {% else %}bg-danger
+                                                     {% endif %}">
+                                        {{ task.get_priority_display }}
+                                    </span>
+                                </div>
+                                
                                 {% if task.description %}
-                                <p class="small text-muted mb-0">{{ task.description }}</p>
+                                <p class="small text-muted mb-1">{{ task.description }}</p>
                                 {% endif %}
-                                <small class="text-muted">Created: {{ task.created|date:"M d, Y" }}</small>
+                                
+                                <div class="d-flex flex-wrap gap-2 mt-2">
+                                    {% if task.category %}
+                                    <span class="badge" >
+                                        {{ task.category.name }}
+                                    </span>
+                                    {% endif %}
+                                    
+                                    {% for tag in task.tags.all %}
+                                    <span class="badge bg-light text-dark">#{{ tag.name }}</span>
+                                    {% endfor %}
+                                </div>
+                                
+                                <div class="d-flex flex-wrap gap-3 mt-2">
+                                    <small class="text-muted">
+                                        <i class="far fa-calendar me-1"></i>
+                                        {% if task.due_date %}
+                                            Due: {{ task.due_date|date:"M d, Y" }}
+                                        {% else %}
+                                            No due date
+                                        {% endif %}
+                                    </small>
+                                    <small class="text-muted">
+                                        <i class="far fa-clock me-1"></i>
+                                        Created: {{ task.created|date:"M d, Y" }}
+                                    </small>
+                                </div>
                             </div>
-                            <div class="d-flex">
-                                <a href="{% url 'todo:update_task' task.id %}" class="btn btn-sm btn-action btn-warning me-1" title="Edit">
+                            <div class="d-flex flex-column">
+                                <a href="{% url 'todo:update_task' task.id %}" class="btn btn-sm btn-action btn-warning mb-1" title="Edit">
                                     <i class="fas fa-edit"></i>
                                 </a>
                                 <a href="{% url 'todo:delete_task' task.id %}" class="btn btn-sm btn-action btn-danger" title="Delete">
@@ -42,8 +146,8 @@
                 {% else %}
                 <div class="text-center py-4">
                     <i class="fas fa-tasks fa-3x text-muted mb-3"></i>
-                    <h5 class="text-muted">No tasks yet</h5>
-                    <p class="text-muted">Get started by adding your first task</p>
+                    <h5 class="text-muted">No tasks found</h5>
+                    <p class="text-muted">Try adjusting your filters or create a new task</p>
                     <a href="{% url 'todo:create_task' %}" class="btn btn-primary">
                         <i class="fas fa-plus me-1"></i> Add Task
                     </a>

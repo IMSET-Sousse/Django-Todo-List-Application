@@ -8,34 +8,30 @@ from .forms import TaskForm, CategoryForm, TagForm, RegisterForm
 @login_required
 def task_list(request):
     tasks = Task.objects.filter(user=request.user)
-   
-    # Search functionality
     search_query = request.GET.get('search', '')
+    
     if search_query:
         tasks = tasks.filter(
             Q(title__icontains=search_query) |
             Q(description__icontains=search_query) |
             Q(tags__name__icontains=search_query)
         ).distinct()
-   
-    # Filter by category if provided
+    
     category_id = request.GET.get('category')
     if category_id:
         tasks = tasks.filter(category__id=category_id)
-   
-    # Filter by tag if provided
+    
     tag_id = request.GET.get('tag')
     if tag_id:
         tasks = tasks.filter(tags__id=tag_id)
-   
-    # Filter by priority if provided
+    
     priority = request.GET.get('priority')
     if priority:
         tasks = tasks.filter(priority=priority)
-   
+    
     categories = Category.objects.all()
     tags = Tag.objects.all()
-   
+    
     context = {
         'tasks': tasks,
         'categories': categories,
@@ -62,7 +58,27 @@ def create_task(request):
         form = TaskForm()
     return render(request, 'todo/task_form.html', {'form': form})
 
-# ... (keep existing update_task and delete_task views)
+@login_required
+def update_task(request, pk):
+    task = get_object_or_404(Task, id=pk, user=request.user)
+    if request.method == 'POST':
+        form = TaskForm(request.POST, instance=task)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Task updated successfully!')
+            return redirect('todo:task_list')
+    else:
+        form = TaskForm(instance=task)
+    return render(request, 'todo/task_form.html', {'form': form})
+
+@login_required
+def delete_task(request, pk):
+    task = get_object_or_404(Task, id=pk, user=request.user)
+    if request.method == 'POST':
+        task.delete()
+        messages.success(request, 'Task deleted successfully!')
+        return redirect('todo:task_list')
+    return render(request, 'todo/task_confirm_delete.html', {'task': task})
 
 @login_required
 def manage_categories(request):
@@ -74,12 +90,20 @@ def manage_categories(request):
             return redirect('todo:manage_categories')
     else:
         form = CategoryForm()
-   
+    
     categories = Category.objects.all()
     return render(request, 'todo/manage_categories.html', {
         'form': form,
         'categories': categories
     })
+
+@login_required
+def delete_category(request, pk):
+    category = get_object_or_404(Category, pk=pk)
+    if request.method == 'POST':
+        category.delete()
+        messages.success(request, 'Category deleted successfully!')
+    return redirect('todo:manage_categories')
 
 @login_required
 def manage_tags(request):
@@ -91,12 +115,20 @@ def manage_tags(request):
             return redirect('todo:manage_tags')
     else:
         form = TagForm()
-   
+    
     tags = Tag.objects.all()
     return render(request, 'todo/manage_tags.html', {
         'form': form,
         'tags': tags
     })
+
+@login_required
+def delete_tag(request, pk):
+    tag = get_object_or_404(Tag, pk=pk)
+    if request.method == 'POST':
+        tag.delete()
+        messages.success(request, 'Tag deleted successfully!')
+    return redirect('todo:manage_tags')
 
 def register(request):
     if request.method == 'POST':
