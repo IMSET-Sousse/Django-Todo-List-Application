@@ -4,12 +4,11 @@ from django.contrib import messages
 from django.db.models import Q
 from .models import Task, Category, Tag
 from .forms import TaskForm, CategoryForm, TagForm, RegisterForm
-from django.contrib import messages
 
 @login_required
 def task_list(request):
     tasks = Task.objects.filter(user=request.user)
-    
+   
     # Search functionality
     search_query = request.GET.get('search', '')
     if search_query:
@@ -18,25 +17,25 @@ def task_list(request):
             Q(description__icontains=search_query) |
             Q(tags__name__icontains=search_query)
         ).distinct()
-    
+   
     # Filter by category if provided
     category_id = request.GET.get('category')
     if category_id:
         tasks = tasks.filter(category__id=category_id)
-    
+   
     # Filter by tag if provided
     tag_id = request.GET.get('tag')
     if tag_id:
         tasks = tasks.filter(tags__id=tag_id)
-    
+   
     # Filter by priority if provided
     priority = request.GET.get('priority')
     if priority:
         tasks = tasks.filter(priority=priority)
-    
+   
     categories = Category.objects.all()
     tags = Tag.objects.all()
-    
+   
     context = {
         'tasks': tasks,
         'categories': categories,
@@ -75,7 +74,7 @@ def manage_categories(request):
             return redirect('todo:manage_categories')
     else:
         form = CategoryForm()
-    
+   
     categories = Category.objects.all()
     return render(request, 'todo/manage_categories.html', {
         'form': form,
@@ -92,7 +91,7 @@ def manage_tags(request):
             return redirect('todo:manage_tags')
     else:
         form = TagForm()
-    
+   
     tags = Tag.objects.all()
     return render(request, 'todo/manage_tags.html', {
         'form': form,
@@ -109,12 +108,4 @@ def register(request):
             return redirect('login')
     else:
         form = RegisterForm()
-    return render(request, 'todo/register.html', {'form': form}) 
-    In create_task view after saving:
-messages.success(request, 'Task created successfully!')
-
-In update_task view after saving:
-messages.success(request, 'Task updated successfully!')
-
-In delete_task view after deleting:
-messages.success(request, 'Task deleted successfully!')
+    return render(request, 'todo/register.html', {'form': form})
