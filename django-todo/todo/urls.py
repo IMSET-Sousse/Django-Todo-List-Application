@@ -8,4 +8,7 @@ urlpatterns = [
     path('create/', views.create_task, name='create_task'),
     path('update/<int:pk>/', views.update_task, name='update_task'),
     path('delete/<int:pk>/', views.delete_task, name='delete_task'),
+    path('categories/', views.manage_categories, name='manage_categories'),
+    path('tags/', views.manage_tags, name='manage_tags'),
+    path('register/', views.register, name='register'),
 ]
